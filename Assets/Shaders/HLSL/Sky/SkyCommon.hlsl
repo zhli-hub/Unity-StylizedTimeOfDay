@@ -39,6 +39,11 @@ half3 _MoonHaloColor;
 half _MoonHaloExponent;
 half _SunHaloContribution;
 half _MoonHaloContribution;
+
+half _StarSpeed;
+half _StarCutoff;
+sampler2D _StarNoiseTex;
+sampler2D _StarColorLut;
 CBUFFER_END
 
 struct appdata
@@ -53,6 +58,14 @@ struct v2f
     float4 vertex : SV_POSITION;
     float3 positionWS : TEXCOORD1;
 };
+
+float4 hash4(float2 p)
+{
+    return frac(sin(float4(1.0 + dot(p, float2(37.0, 17.0)),
+                           2.0 + dot(p, float2(11.0, 47.0)),
+                           3.0 + dot(p, float2(41.0, 29.0)),
+                           4.0 + dot(p, float2(23.0, 31.0)))) * 103.0);
+}
 
 half3 GetSunMoonDisk(float3 viewDir, float3 sunDir, half sunHaloMask, half moonHaloMask)
 {
@@ -102,6 +115,21 @@ void ComputeSkyMasks(float3 viewDir, float3 sunDir, float3 moonDir, out half sun
     gradient = pow(gradient, _SkyGradientExponent);
 }
 
+half3 GetStarry(float3 viewDir, float3 sunDir)
+{
+    half2 starUV = viewDir.xz / viewDir.y;
+    half2 iuv = floor(starUV);
+    float4 ofa = hash4(iuv + half2(0.2, 0.6));
+    starUV = ofa + frac(starUV);
+                
+    half stars = tex2D(_StarNoiseTex, (starUV + _StarSpeed * _Time.x)).r;
+    stars *= saturate(-sunDir.y) * step(0, viewDir.y);
+    stars = step(1 - _StarCutoff, stars);
+    
+    half3 starColor = tex2D(_StarColorLut, float2(starUV.x, 0)) * stars * 2;
+    return starColor;
+}
+
 half3 GetGradientSkyAndDisk(float3 viewDir, float3 sunDir)
 {
     half maskSunDisc, maskSunHalo, maskMoonHalo, maskHorizon, maskGradient;
@@ -121,8 +149,9 @@ half3 GetGradientSkyAndDisk(float3 viewDir, float3 sunDir)
 
     half3 finalSunHaloColor = lerp(_SunHaloColor, horizonColor, _HorizonLineContribution * maskHorizon);
 
+    half3 starry = GetStarry(viewDir, sunDir);
     gradientSky += finalSunHaloColor * _SunHaloContribution * maskSunHalo + _MoonHaloColor * _MoonHaloContribution * maskMoonHalo;
-    
+    gradientSky += starry;
 // DEBUG
     // gradientSky = maskHorizon.rrr;
     // gradientSky = maskGradient.rrr;
