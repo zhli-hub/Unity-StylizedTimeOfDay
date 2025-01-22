@@ -28,8 +28,8 @@ half3 _NightTopColor;
 
 half _SkyGradientExponent;
 
-half3 _HorizonLineDuskColor;
-half3 _HorizonLineNoonColor;
+half3 _HorizonLineDayColor;
+half3 _HorizonLineNightColor;
 half _HorizonLineContribution;
 half _HorizonLineExponent;
 
@@ -96,6 +96,7 @@ void ComputeSkyMasks(float3 viewDir, float3 sunDir, float3 moonDir, out half sun
 
     horizon = saturate(1 - abs(viewDir.y));
     horizon = pow(horizon, _HorizonLineExponent);
+    horizon *= saturate(smoothstep(-0.4, 0, sunDir.y) * smoothstep(-0.4, 0, -sunDir.y) * 1);
 
     gradient = 1 - saturate(viewDir.y);
     gradient = pow(gradient, _SkyGradientExponent);
@@ -115,10 +116,10 @@ half3 GetGradientSkyAndDisk(float3 viewDir, float3 sunDir)
     
     half3 gradientSky = lerp(gradientNight, gradientDay, sunNightStep);
 
-    half3 horizonColor = lerp(0, lerp(_HorizonLineDuskColor, _HorizonLineNoonColor, saturate(sunDir.y)), sunNightStep);
-    gradientSky = lerp(gradientSky, horizonColor, _HorizonLineContribution * maskHorizon);
+    half3 horizonColor = lerp(_HorizonLineNightColor, _HorizonLineDayColor, sunNightStep);
+    gradientSky = lerp(gradientSky, horizonColor * 2, pow(_HorizonLineContribution * maskHorizon, 0.3));
 
-    half3 finalSunHaloColor = lerp(_SunHaloColor, horizonColor, _HorizonLineContribution * maskHorizon * 1.2f);
+    half3 finalSunHaloColor = lerp(_SunHaloColor, horizonColor, _HorizonLineContribution * maskHorizon);
 
     gradientSky += finalSunHaloColor * _SunHaloContribution * maskSunHalo + _MoonHaloColor * _MoonHaloContribution * maskMoonHalo;
     
@@ -126,7 +127,8 @@ half3 GetGradientSkyAndDisk(float3 viewDir, float3 sunDir)
     // gradientSky = maskHorizon.rrr;
     // gradientSky = maskGradient.rrr;
     // gradientSky = maskMoonHalo.rrr;
-    // gradientSky = sunMoonDisk;
+    // gradientSky = maskHorizon.rrr * horizonColor;
+    // gradientSky = (pow(_HorizonLineContribution * maskHorizon, 0.5)).rrr;
 // DEBUG
     
     return gradientSky + sunMoonDisk;

@@ -20,8 +20,8 @@ Shader "HUA/HUA_Standard_Sky"
         _NightTopColor("夜晚顶部颜色", color) = (0.7,0.7,1,1)
         _SkyGradientExponent("天空衰减指数", Range(0, 20)) = 10
         
-        _HorizonLineDuskColor("傍晚天际线颜色", color) = (1, 0.7, 0,1)
-        _HorizonLineNoonColor("中午天际线颜色", color) = (1,1,1,1)
+        _HorizonLineDayColor("早上天际线颜色", color) = (1, 0.7, 0,1)
+        _HorizonLineNightColor("晚上天际线颜色", color) = (0.1,0.3,0.6,1)
         _HorizonLineContribution("天际线贡献度", Range(0, 1)) = 0.5
         _HorizonLineExponent("天际线指数", Range(0, 20)) = 10
         
