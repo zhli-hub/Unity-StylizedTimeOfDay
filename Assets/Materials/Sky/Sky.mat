@@ -142,7 +142,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _StarCutoff: 0.88
+    - _StarCutoff: 0.751
     - _StarSpeed: 0.01
     - _SunHaloContribution: 0.103
     - _SunHaloExponent: 113.7

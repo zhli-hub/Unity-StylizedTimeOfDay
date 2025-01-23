@@ -123,10 +123,10 @@ half3 GetStarry(float3 viewDir, float3 sunDir)
     starUV = ofa + frac(starUV);
                 
     half stars = tex2D(_StarNoiseTex, (starUV + _StarSpeed * _Time.x)).r;
-    stars *= saturate(-sunDir.y) * step(0, viewDir.y);
+    stars *= saturate(-sunDir.y * 2) * step(0, viewDir.y);
     stars = step(1 - _StarCutoff, stars);
     
-    half3 starColor = tex2D(_StarColorLut, float2(starUV.x, 0)) * stars * 2;
+    half3 starColor = tex2D(_StarColorLut, float2(starUV.x, 0)) * stars * 2.5;
     return starColor;
 }
 
